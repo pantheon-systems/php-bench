@@ -1,4 +1,3 @@
-#! /usr/bin/env php
 <?php
 
 ignore_user_abort(TRUE);
@@ -9,16 +8,16 @@ ob_implicit_flush(1);
 define('PHPBENCH_VERSION', '0.8.1');
 define('CSV_SEP', ',');
 define('CSV_NL', "\n");
-define('DEFAULT_BASE', 100000);
+define('DEFAULT_BASE', 100);
 define('MIN_BASE', 50);
 
 $TESTS_DIRS = array('/usr/local/lib/phpbench/tests',
-		    '/usr/local/share/phpbench/tests',
-		    '/usr/lib/phpbench/tests',
-		    '/usr/share/phpbench/tests',
-		    '/opt/phpbench/tests',		    
-		    'tests',
-		    '.');
+            '/usr/local/share/phpbench/tests',
+            '/usr/lib/phpbench/tests',
+            '/usr/share/phpbench/tests',
+            '/opt/phpbench/tests',          
+            'tests',
+            '.');
 
 function test_start($func) {
     global $GLOBAL_TEST_FUNC;
@@ -38,14 +37,14 @@ function test_end($func) {
     list($usec, $sec) = explode(' ', microtime());
     $now = $usec + $sec;
     if ($func !== $GLOBAL_TEST_FUNC) {
-	trigger_error('Wrong func: [' . $func . '] ' .
-		      'vs ' . $GLOBAL_TEST_FUNC);
-	return FALSE;
+    trigger_error('Wrong func: [' . $func . '] ' .
+              'vs ' . $GLOBAL_TEST_FUNC);
+    return FALSE;
     }
     if ($now < $GLOBAL_TEST_START_TIME) {
-	trigger_error('Wrong func: [' . $func . '] ' .
-		      'vs ' . $GLOBAL_TEST_FUNC);
-	return FALSE;
+    trigger_error('Wrong func: [' . $func . '] ' .
+              'vs ' . $GLOBAL_TEST_FUNC);
+    return FALSE;
     }
     $duration = $now - $GLOBAL_TEST_START_TIME;
     echo sprintf('%9.04f', $duration) . ' seconds.' . "\n";
@@ -60,53 +59,53 @@ function test_regression($func) {
 
 function do_tests($base, &$tests_list, &$results) {
     foreach ($tests_list as $test) {
-	$results[$test] = call_user_func($test, $base, $results);	
+    $results[$test] = call_user_func($test, $base, $results);   
     }
 }
 
 function load_test($tests_dir, &$tests_list) {
     if (($dir = @opendir($tests_dir)) === FALSE) {
-	return FALSE;
+    return FALSE;
     }
     $matches = array();
     while (($entry = readdir($dir)) !== FALSE) {
-	if (preg_match('/^(test_.+)[.]php$/i', $entry, $matches) <= 0) {
-	    continue;
-	}
-	$test_name = $matches[1];
-	include_once($tests_dir . '/' . $entry);
-	echo 'Test [' . $test_name . '] ';
-	flush();
-	if (!function_exists($test_name . '_enabled')) {
-	    echo 'INVALID !' . "\n";	    
-	    continue;
-	}
-	if (call_user_func($test_name . '_enabled') !== TRUE) {
-	    echo 'disabled.' . "\n";
-	    continue;
-	}
-	if (!function_exists($test_name)) {
-	    echo 'BROKEN !' . "\n";
-	    continue;
-	}
-	array_push($tests_list, $test_name);	
-	echo 'enabled.' . "\n";
+    if (preg_match('/^(test_.+)[.]php$/i', $entry, $matches) <= 0) {
+        continue;
+    }
+    $test_name = $matches[1];
+    include_once($tests_dir . '/' . $entry);
+    echo 'Test [' . $test_name . '] ';
+    flush();
+    if (!function_exists($test_name . '_enabled')) {
+        echo 'INVALID !' . "\n";        
+        continue;
+    }
+    if (call_user_func($test_name . '_enabled') !== TRUE) {
+        echo 'disabled.' . "\n";
+        continue;
+    }
+    if (!function_exists($test_name)) {
+        echo 'BROKEN !' . "\n";
+        continue;
+    }
+    array_push($tests_list, $test_name);    
+    echo 'enabled.' . "\n";
     }
     closedir($dir);
     
-    return TRUE;	  
+    return TRUE;      
 }
 
 function load_tests(&$tests_dirs, &$tests_list) {
     $ret = FALSE;
     
     foreach ($tests_dirs as $tests_dir) {
-	if (load_test($tests_dir, $tests_list) === TRUE) {
-	    $ret = TRUE;
-	}
+    if (load_test($tests_dir, $tests_list) === TRUE) {
+        $ret = TRUE;
+    }
     }
     if (count($tests_list) <= 0) {
-	return FALSE;
+    return FALSE;
     }
     asort($tests_list);
     
@@ -115,37 +114,37 @@ function load_tests(&$tests_dirs, &$tests_list) {
 
 function csv_escape($str) {
     if (strchr($str, CSV_SEP) !== FALSE) {
-	return '"' . str_replace('"', '\'', $str) . '"';
+    return '"' . str_replace('"', '\'', $str) . '"';
     }
     return $str;
 }
 
 function export_csv($csv_file, &$results, &$percentile_times) {
     if (empty($csv_file)) {
-	return TRUE;
+    return TRUE;
     }
     if (($fp = fopen($csv_file, 'w')) === FALSE) {
-	return FALSE;
+    return FALSE;
     }
     if (fputs($fp, csv_escape('Test') . CSV_SEP . csv_escape('Time') . CSV_SEP .
-	      csv_escape('Percentile') . CSV_NL)
-	=== FALSE) {
-	@fclose($fp);
-	unlink($csv_file);
-	return FALSE;
+          csv_escape('Percentile') . CSV_NL)
+    === FALSE) {
+    @fclose($fp);
+    unlink($csv_file);
+    return FALSE;
     }
     foreach ($results as $test => $time) {
-	if (fputs($fp, csv_escape($test) . CSV_SEP .
-		  csv_escape(sprintf('%.04f', $time)) . CSV_SEP .
-		  csv_escape(sprintf('%.03f', $percentile_times[$test])) .
-		  CSV_NL) === FALSE) {
-	    @fclose($fp);
-	    unlink($csv_file);
-	    return FALSE;
-	}
+    if (fputs($fp, csv_escape($test) . CSV_SEP .
+          csv_escape(sprintf('%.04f', $time)) . CSV_SEP .
+          csv_escape(sprintf('%.03f', $percentile_times[$test])) .
+          CSV_NL) === FALSE) {
+        @fclose($fp);
+        unlink($csv_file);
+        return FALSE;
+    }
     }
     if (fclose($fp) === FALSE) {
-	return FALSE;
+    return FALSE;
     }    
     return TRUE;
 }
@@ -153,21 +152,21 @@ function export_csv($csv_file, &$results, &$percentile_times) {
 function show_summary($base, &$results, $csv_file) {
     $total_time = 0.0;
     foreach ($results as $test => $time) {
-	$total_time += $time;
+    $total_time += $time;
     }
     if ($total_time <= 0.0) {
-	die('Not enough iterations, please try with more.' . "\n");
+    die('Not enough iterations, please try with more.' . "\n");
     }
     $percentile_times = array();
     foreach ($results as $test => $time) {
-	$percentile_times[$test] = $time * 100.0 / $total_time;
+    $percentile_times[$test] = $time * 100.0 / $total_time;
     }
     $score = (float) $base * 10.0 / $total_time;
     if (function_exists('php_uname')) {
-	echo 'System     : ' . php_uname() . "\n";
+    echo 'System     : ' . php_uname() . "\n";
     }
     if (function_exists('phpversion')) {
-	echo 'PHP version: ' . phpversion() . "\n";
+    echo 'PHP version: ' . phpversion() . "\n";
     }
     echo
       'PHPBench   : ' . PHPBENCH_VERSION . "\n" .
@@ -178,7 +177,7 @@ function show_summary($base, &$results, $csv_file) {
       'Score      : ' . round($score) . ' (higher is better)' . "\n";
     
     if ($csv_file !== FALSE) {
-	export_csv($csv_file, $results, $percentile_times);
+    export_csv($csv_file, $results, $percentile_times);
     }
 }
 
@@ -193,7 +192,7 @@ function help() {
       "\n\n" .
       'Scripts are loaded from the following directories: ' . "\n";    
     foreach ($TESTS_DIRS as $tests_dir) {
-	echo '  - ' . $tests_dir . "\n";
+    echo '  - ' . $tests_dir . "\n";
     }
     echo "\n";
 }
@@ -209,7 +208,7 @@ if (isset($options['h'])) {
 if (!empty($options['f'])) {
     $csv_file = $options['f'];
     if (preg_match('/[.]csv$/i', $csv_file) <= 0) {
-	$csv_file .= '.csv';
+    $csv_file .= '.csv';
     }
 }
 if (!empty($options['i']) && is_numeric($options['i'])) {
