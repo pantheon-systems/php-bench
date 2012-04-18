@@ -24,7 +24,7 @@ function test_start($func) {
     global $GLOBAL_TEST_START_TIME;    
 
     $GLOBAL_TEST_FUNC = $func;
-    echo sprintf('%34s', $func) . "\t";
+    //echo sprintf('%34s', $func) . "\t";
     flush();
     list($usec, $sec) = explode(' ', microtime());
     $GLOBAL_TEST_START_TIME = $usec + $sec;    
@@ -47,7 +47,7 @@ function test_end($func) {
     return FALSE;
     }
     $duration = $now - $GLOBAL_TEST_START_TIME;
-    echo sprintf('%9.04f', $duration) . ' seconds.' . "\n";
+    //echo sprintf('%9.04f', $duration) . ' seconds.' . "\n";
     
     return $duration;
 }
@@ -74,7 +74,7 @@ function load_test($tests_dir, &$tests_list) {
     }
     $test_name = $matches[1];
     include_once($tests_dir . '/' . $entry);
-    echo 'Test [' . $test_name . '] ';
+    //echo 'Test [' . $test_name . '] ';
     flush();
     if (!function_exists($test_name . '_enabled')) {
         echo 'INVALID !' . "\n";        
@@ -89,7 +89,7 @@ function load_test($tests_dir, &$tests_list) {
         continue;
     }
     array_push($tests_list, $test_name);    
-    echo 'enabled.' . "\n";
+    //echo 'enabled.' . "\n";
     }
     closedir($dir);
     
@@ -112,89 +112,47 @@ function load_tests(&$tests_dirs, &$tests_list) {
     return $ret;
 }
 
-function csv_escape($str) {
-    if (strchr($str, CSV_SEP) !== FALSE) {
-    return '"' . str_replace('"', '\'', $str) . '"';
-    }
-    return $str;
-}
-
-function export_csv($csv_file, &$results, &$percentile_times) {
-    if (empty($csv_file)) {
-    return TRUE;
-    }
-    if (($fp = fopen($csv_file, 'w')) === FALSE) {
-    return FALSE;
-    }
-    if (fputs($fp, csv_escape('Test') . CSV_SEP . csv_escape('Time') . CSV_SEP .
-          csv_escape('Percentile') . CSV_NL)
-    === FALSE) {
-    @fclose($fp);
-    unlink($csv_file);
-    return FALSE;
-    }
+function generate_summary($base, &$results) {
+    $output = array();
+    $output['total_time'] = 0.0;
     foreach ($results as $test => $time) {
-    if (fputs($fp, csv_escape($test) . CSV_SEP .
-          csv_escape(sprintf('%.04f', $time)) . CSV_SEP .
-          csv_escape(sprintf('%.03f', $percentile_times[$test])) .
-          CSV_NL) === FALSE) {
-        @fclose($fp);
-        unlink($csv_file);
-        return FALSE;
+      $output['total_time'] += $time;
     }
+    if ($output['total_time'] <= 0.0) {
+      die('Not enough iterations, please try with more.' . "\n");
     }
-    if (fclose($fp) === FALSE) {
-    return FALSE;
-    }    
-    return TRUE;
-}
-
-function show_summary($base, &$results, $csv_file) {
-    $total_time = 0.0;
+    $output['percentile_times'] = array();
     foreach ($results as $test => $time) {
-    $total_time += $time;
+      $output['percentile_times'][$test] = $time * 100.0 / $total_time;
     }
-    if ($total_time <= 0.0) {
-    die('Not enough iterations, please try with more.' . "\n");
-    }
-    $percentile_times = array();
-    foreach ($results as $test => $time) {
-    $percentile_times[$test] = $time * 100.0 / $total_time;
-    }
-    $score = (float) $base * 10.0 / $total_time;
+    $output['score'] = (float) $base * 10.0 / $total_time;    
     if (function_exists('php_uname')) {
-    echo 'System     : ' . php_uname() . "\n";
+      $output['php_uname'] = php_uname();
     }
     if (function_exists('phpversion')) {
-    echo 'PHP version: ' . phpversion() . "\n";
+      $output['phpversion'] = phpversion();
     }
+    return $output;
+}
+
+function output_summary($output, $output_json) {
+    if ($output_json) {
+        echo json_encode($output);
+    } else {
+        output_summary_html($output);    
+    }    
+}
+
+function output_summary_html($output) {
+    echo 'System     : ' . $output['php_uname'] . "\n";
+    echo 'PHP version: ' . $output['phpversion'] . "\n";
     echo
       'PHPBench   : ' . PHPBENCH_VERSION . "\n" .
       'Date       : ' . date('F j, Y, g:i a') . "\n" .
-      'Tests      : ' . count($results) . "\n" .
+      'Tests      : ' . count($output['results']) . "\n" .
       'Iterations : ' . $base . "\n" .
       'Total time : ' . round($total_time) . ' seconds' . "\n" .
       'Score      : ' . round($score) . ' (higher is better)' . "\n";
-    
-    if ($csv_file !== FALSE) {
-    export_csv($csv_file, $results, $percentile_times);
-    }
-}
-
-function help() {
-    global $TESTS_DIRS;
-    
-    echo
-      "\n" . 'PHPBench version ' . PHPBENCH_VERSION . "\n\n" .
-      '-f <file name> : Output a summary as a CSV file.' . "\n" .
-      '-h             : Help.' . "\n" .
-      '-i <number>    : Number of iterations (default=' . DEFAULT_BASE . ').' .
-      "\n\n" .
-      'Scripts are loaded from the following directories: ' . "\n";    
-    foreach ($TESTS_DIRS as $tests_dir) {
-    echo '  - ' . $tests_dir . "\n";
-    }
-    echo "\n";
 }
 
 $base = DEFAULT_BASE;
@@ -202,38 +160,19 @@ if (array_key_exists('iterations', $_GET)) {
   $base = intval($_GET['iterations']);
 }
 
-$csv_file = FALSE;
-
-$options = getopt('f:hi:');
-if (isset($options['h'])) {
-    help();
-    exit;
-}
-if (!empty($options['f'])) {
-    $csv_file = $options['f'];
-    if (preg_match('/[.]csv$/i', $csv_file) <= 0) {
-    $csv_file .= '.csv';
-    }
-}
-if (!empty($options['i']) && is_numeric($options['i'])) {
-    $base = $options['i'];
-}
-if ($base < MIN_BASE) {
-    die('Min iterations = ' . MIN_BASE . "\n");
-}
-if (empty($options)) {
-    help();
-}
-echo 'Starting the benchmark with ' . $base . ' iterations.' . "\n\n";
+//echo 'Starting the benchmark with ' . $base . ' iterations.' . "\n\n";
 $tests_list = array();
 $results = array();
 if (load_tests($TESTS_DIRS, $tests_list) === FALSE) {
     die('Unable to load tests');
 }
-echo "\n";
+
+//echo "\n";
 do_tests($base, $tests_list, $results);
-echo "\n";
-show_summary($base, $results, $csv_file);
-echo "\n";
+//echo "\n";
+$summary = generate_summary($base, $results);
+$output_json = array_key_exists('json', $_GET);
+output_summary($summary, $output_json);
+//echo "\n";
 
 ?>
