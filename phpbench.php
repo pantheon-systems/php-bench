@@ -198,6 +198,10 @@ function help() {
 }
 
 $base = DEFAULT_BASE;
+if (array_key_exists($_GET, 'iterations')) {
+  $base = intval($_GET['iterations']);
+}
+
 $csv_file = FALSE;
 
 $options = getopt('f:hi:');
