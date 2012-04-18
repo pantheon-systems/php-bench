@@ -198,7 +198,7 @@ function help() {
 }
 
 $base = DEFAULT_BASE;
-if (array_key_exists($_GET, 'iterations')) {
+if (array_key_exists('iterations', $_GET)) {
   $base = intval($_GET['iterations']);
 }
 
