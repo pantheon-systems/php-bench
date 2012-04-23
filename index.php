@@ -159,7 +159,7 @@ function output_summary_html($output) {
       '<li>Tests: ' . count($output['results']) . "</li>\n" .
       '<li>Total time: ' . round($output['total_time']) . ' seconds' . "</li>\n";
     echo "</ul>\n";
-    echo "<h3>Help:</h3>\n";
+    echo "<h3>Usage:</h3>\n";
     echo "<ul>\n";
     echo "<li>Use ?iterations=999 to specify iterations</li>\n";
     echo "<li>Use ?json=true to output json results</li>\n";
