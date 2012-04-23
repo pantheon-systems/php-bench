@@ -142,6 +142,7 @@ function generate_summary($iterations, &$results) {
 }
 
 function output_summary($output, $format) {
+    die('Format is '. $format);
     if ($format == 'json') {
         echo json_encode($output);
     } else {
