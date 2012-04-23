@@ -15,24 +15,24 @@ $TESTS_DIRS = array('/usr/local/lib/phpbench/tests',
             '/usr/local/share/phpbench/tests',
             '/usr/lib/phpbench/tests',
             '/usr/share/phpbench/tests',
-            '/opt/phpbench/tests',          
+            '/opt/phpbench/tests',
             'tests',
             '.');
 
 function test_start($func) {
     global $GLOBAL_TEST_FUNC;
-    global $GLOBAL_TEST_START_TIME;    
+    global $GLOBAL_TEST_START_TIME;
 
     $GLOBAL_TEST_FUNC = $func;
     //echo sprintf('%34s', $func) . "\t";
     flush();
     list($usec, $sec) = explode(' ', microtime());
-    $GLOBAL_TEST_START_TIME = $usec + $sec;    
+    $GLOBAL_TEST_START_TIME = $usec + $sec;
 }
 
 function test_end($func) {
     global $GLOBAL_TEST_FUNC;
-    global $GLOBAL_TEST_START_TIME;    
+    global $GLOBAL_TEST_START_TIME;
 
     list($usec, $sec) = explode(' ', microtime());
     $now = $usec + $sec;
@@ -48,7 +48,7 @@ function test_end($func) {
     }
     $duration = $now - $GLOBAL_TEST_START_TIME;
     //echo sprintf('%9.04f', $duration) . ' seconds.' . "\n";
-    
+
     return $duration;
 }
 
@@ -59,7 +59,7 @@ function test_regression($func) {
 
 function do_tests($base, &$tests_list, &$results) {
     foreach ($tests_list as $test) {
-    $results[$test] = call_user_func($test, $base, $results);   
+    $results[$test] = call_user_func($test, $base, $results);
     }
 }
 
@@ -77,7 +77,7 @@ function load_test($tests_dir, &$tests_list) {
     //echo 'Test [' . $test_name . '] ';
     flush();
     if (!function_exists($test_name . '_enabled')) {
-        echo 'INVALID !' . "\n";        
+        echo 'INVALID !' . "\n";
         continue;
     }
     if (call_user_func($test_name . '_enabled') !== TRUE) {
@@ -88,17 +88,17 @@ function load_test($tests_dir, &$tests_list) {
         echo 'BROKEN !' . "\n";
         continue;
     }
-    array_push($tests_list, $test_name);    
+    array_push($tests_list, $test_name);
     //echo 'enabled.' . "\n";
     }
     closedir($dir);
-    
-    return TRUE;      
+
+    return TRUE;
 }
 
 function load_tests(&$tests_dirs, &$tests_list) {
     $ret = FALSE;
-    
+
     foreach ($tests_dirs as $tests_dir) {
     if (load_test($tests_dir, $tests_list) === TRUE) {
         $ret = TRUE;
@@ -108,7 +108,7 @@ function load_tests(&$tests_dirs, &$tests_list) {
     return FALSE;
     }
     asort($tests_list);
-    
+
     return $ret;
 }
 
@@ -123,9 +123,9 @@ function generate_summary($base, &$results) {
     }
     $output['percentile_times'] = array();
     foreach ($results as $test => $time) {
-      $output['percentile_times'][$test] = $time * 100.0 / $total_time;
+      $output['percentile_times'][$test] = $time * 100.0 / $output['total_time'];
     }
-    $output['score'] = (float) $base * 10.0 / $total_time;    
+    $output['score'] = (float) $base * 10.0 / $output['total_time'];
     if (function_exists('php_uname')) {
       $output['php_uname'] = php_uname();
     }
@@ -139,8 +139,8 @@ function output_summary($output, $output_json) {
     if ($output_json) {
         echo json_encode($output);
     } else {
-        output_summary_html($output);    
-    }    
+        output_summary_html($output);
+    }
 }
 
 function output_summary_html($output) {
@@ -151,8 +151,8 @@ function output_summary_html($output) {
       'Date       : ' . date('F j, Y, g:i a') . "\n" .
       'Tests      : ' . count($output['results']) . "\n" .
       'Iterations : ' . $base . "\n" .
-      'Total time : ' . round($total_time) . ' seconds' . "\n" .
-      'Score      : ' . round($score) . ' (higher is better)' . "\n";
+      'Total time : ' . round($output['total_time']) . ' seconds' . "\n" .
+      'Score      : ' . round($output['score']) . ' (higher is better)' . "\n";
 }
 
 $base = DEFAULT_BASE;
