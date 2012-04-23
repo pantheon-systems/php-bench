@@ -112,7 +112,7 @@ function load_tests(&$tests_dirs, &$tests_list) {
     return $ret;
 }
 
-function generate_summary($base, &$results) {
+function generate_summary($iterations, &$results) {
     $output = array();
     $output['total_time'] = 0.0;
     foreach ($results as $test => $time) {
@@ -125,13 +125,14 @@ function generate_summary($base, &$results) {
     foreach ($results as $test => $time) {
       $output['percentile_times'][$test] = $time * 100.0 / $output['total_time'];
     }
-    $output['score'] = (float) $base * 10.0 / $output['total_time'];
+    $output['score'] = (float) $iterations * 10.0 / $output['total_time'];
     if (function_exists('php_uname')) {
       $output['php_uname'] = php_uname();
     }
     if (function_exists('phpversion')) {
       $output['phpversion'] = phpversion();
     }
+    $output['iterations'] = $iterations;
     return $output;
 }
 
@@ -150,29 +151,27 @@ function output_summary_html($output) {
       'PHPBench   : ' . PHPBENCH_VERSION . "\n" .
       'Date       : ' . date('F j, Y, g:i a') . "\n" .
       'Tests      : ' . count($output['results']) . "\n" .
-      'Iterations : ' . $base . "\n" .
+      'Iterations : ' . $output['iterations'] . "\n" .
       'Total time : ' . round($output['total_time']) . ' seconds' . "\n" .
       'Score      : ' . round($output['score']) . ' (higher is better)' . "\n";
 }
 
-$base = DEFAULT_BASE;
+$iterations = DEFAULT_BASE;
 if (array_key_exists('iterations', $_GET)) {
-  $base = intval($_GET['iterations']);
+  $iterations = intval($_GET['iterations']);
 }
 
-//echo 'Starting the benchmark with ' . $base . ' iterations.' . "\n\n";
 $tests_list = array();
 $results = array();
 if (load_tests($TESTS_DIRS, $tests_list) === FALSE) {
     die('Unable to load tests');
 }
 
-//echo "\n";
-do_tests($base, $tests_list, $results);
-//echo "\n";
-$summary = generate_summary($base, $results);
+// Get Output Format
 $output_json = array_key_exists('json', $_GET);
+
+do_tests($iterations, $tests_list, $results);
+$summary = generate_summary($iterations, $results);
 output_summary($summary, $output_json);
-//echo "\n";
 
 ?>
