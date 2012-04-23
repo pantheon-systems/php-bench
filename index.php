@@ -115,7 +115,7 @@ function load_tests(&$tests_dirs, &$tests_list) {
 function generate_summary($iterations, &$results) {
     $output = array();
     $output['time'] = time();
-    $output['date'] = date('DATE_RFC822');
+    $output['date'] = date(DATE_RFC822);
     $output['total_time'] = 0.0;
     $output['iterations'] = $iterations;
     $output['results'] = $results;
