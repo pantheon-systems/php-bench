@@ -141,8 +141,8 @@ function generate_summary($iterations, &$results) {
     return $output;
 }
 
-function output_summary($output, $output_json) {
-    if ($output_json) {
+function output_summary($output, $format) {
+    if ($format == 'json') {
         echo json_encode($output);
     } else {
         output_summary_html($output);
@@ -182,10 +182,12 @@ if (load_tests($TESTS_DIRS, $tests_list) === FALSE) {
 }
 
 // Get Output Format
-$output_json = array_key_exists('json', $_GET);
-
+$output_format = 'html';
+if (array_key_exists('format', $_GET)) {
+    $output_format == $_GET['format'];
+}
 do_tests($iterations, $tests_list, $results);
 $summary = generate_summary($iterations, $results);
-output_summary($summary, $output_json);
+output_summary($summary, $output_format);
 
 ?>
