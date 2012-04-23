@@ -142,7 +142,6 @@ function generate_summary($iterations, &$results) {
 }
 
 function output_summary($output, $format) {
-    die('Format is '. $format);
     if ($format == 'json') {
         echo json_encode($output);
     } else {
@@ -185,7 +184,7 @@ if (load_tests($TESTS_DIRS, $tests_list) === FALSE) {
 // Get Output Format
 $output_format = 'html';
 if (array_key_exists('format', $_GET)) {
-    $output_format == $_GET['format'];
+    $output_format = $_GET['format'];
 }
 do_tests($iterations, $tests_list, $results);
 $summary = generate_summary($iterations, $results);
