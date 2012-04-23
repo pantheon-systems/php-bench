@@ -116,7 +116,7 @@ function generate_summary($iterations, &$results) {
     $output = array();
     $output['total_time'] = 0.0;
     $output['iterations'] = $iterations;
-    $output['iterations'] = $results;
+    $output['results'] = $results;
     foreach ($results as $test => $time) {
       $output['total_time'] += $time;
     }
