@@ -166,7 +166,7 @@ function output_summary_html($output) {
     echo "<h3>Usage:</h3>\n";
     echo "<ul>\n";
     echo "<li>Use ?iterations=999 to specify iterations</li>\n";
-    echo "<li>Use ?json=true to output json results</li>\n";
+    echo "<li>Use ?format=json to output json results</li>\n";
     echo '</ul>';
 }
 
