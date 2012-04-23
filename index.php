@@ -119,6 +119,8 @@ function generate_summary($iterations, &$results) {
     $output['total_time'] = 0.0;
     $output['iterations'] = $iterations;
     $output['results'] = $results;
+    $output['hostname'] = gethostname();
+    $output['host'] = gethostbyname(gethostname());
     foreach ($results as $test => $time) {
       $output['total_time'] += $time;
     }
@@ -152,6 +154,8 @@ function output_summary_html($output) {
     echo '<ul>';
     echo '<li>Date: ' . $output['date'] . "</li>\n";
     echo '<li>System: ' . $output['php_uname'] . "</li>\n";
+    echo '<li>Hostname: ' . $output['hostname'] . "</li>\n";
+    echo '<li>Host: ' . $output['host'] . "</li>\n";
     echo '<li>PHP version: ' . $output['phpversion'] . "</li>\n";
     echo '<li>Iterations: ' . $output['iterations'] . "</li>\n";
     echo
