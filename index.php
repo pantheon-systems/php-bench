@@ -115,6 +115,8 @@ function load_tests(&$tests_dirs, &$tests_list) {
 function generate_summary($iterations, &$results) {
     $output = array();
     $output['total_time'] = 0.0;
+    $output['iterations'] = $iterations;
+    $output['iterations'] = $results;
     foreach ($results as $test => $time) {
       $output['total_time'] += $time;
     }
@@ -132,7 +134,6 @@ function generate_summary($iterations, &$results) {
     if (function_exists('phpversion')) {
       $output['phpversion'] = phpversion();
     }
-    $output['iterations'] = $iterations;
     return $output;
 }
 
