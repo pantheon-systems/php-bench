@@ -114,6 +114,8 @@ function load_tests(&$tests_dirs, &$tests_list) {
 
 function generate_summary($iterations, &$results) {
     $output = array();
+    $output['time'] = time();
+    $output['date'] = date('DATE_RFC822');
     $output['total_time'] = 0.0;
     $output['iterations'] = $iterations;
     $output['results'] = $results;
@@ -127,7 +129,7 @@ function generate_summary($iterations, &$results) {
     foreach ($results as $test => $time) {
       $output['percentile_times'][$test] = $time * 100.0 / $output['total_time'];
     }
-    $output['score'] = (float) $iterations * 10.0 / $output['total_time'];
+    $output['score'] = round((float) $iterations * 10.0 / $output['total_time']);
     if (function_exists('php_uname')) {
       $output['php_uname'] = php_uname();
     }
@@ -146,17 +148,18 @@ function output_summary($output, $output_json) {
 }
 
 function output_summary_html($output) {
+    echo '<h2>Php Benchmark</h2>';
     echo '<ul>';
+    echo '<li>Date     : ' . $output['date'] . "</li>\n";
     echo '<li>System     : ' . $output['php_uname'] . "</li>\n";
     echo '<li>PHP version: ' . $output['phpversion'] . "</li>\n";
+    echo '<li>Iterations: ' . $output['iterations'] . "</li>\n";
     echo
       '<li>PHPBench   : ' . PHPBENCH_VERSION . "</li>\n" .
-      '<li>Date       : ' . date('F j, Y, g:i a') . "</li>\n" .
       '<li>Tests      : ' . count($output['results']) . "</li>\n" .
-      '<li>Iterations : ' . $output['iterations'] . "</li>\n" .
-      '<li>Total time : ' . round($output['total_time']) . ' seconds' . "</li>\n" .
-      '<li>Score      : ' . round($output['score']) . ' (higher is better)' . "</li>\n";
+      '<li>Total time : ' . round($output['total_time']) . ' seconds' . "</li>\n";
     echo '</ul>';
+    echo '<h3>Score      : ' . round($output['score']) . ' (higher is better)' . "</h3>\n";
 }
 
 $iterations = DEFAULT_BASE;
