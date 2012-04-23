@@ -148,18 +148,17 @@ function output_summary($output, $output_json) {
 }
 
 function output_summary_html($output) {
-    echo '<h2>Php Benchmark</h2>';
+    echo '<h2>Php Benchmark: '.round($output['score']).'</h2>';
     echo '<ul>';
-    echo '<li>Date     : ' . $output['date'] . "</li>\n";
-    echo '<li>System     : ' . $output['php_uname'] . "</li>\n";
+    echo '<li>Date: ' . $output['date'] . "</li>\n";
+    echo '<li>System: ' . $output['php_uname'] . "</li>\n";
     echo '<li>PHP version: ' . $output['phpversion'] . "</li>\n";
     echo '<li>Iterations: ' . $output['iterations'] . "</li>\n";
     echo
-      '<li>PHPBench   : ' . PHPBENCH_VERSION . "</li>\n" .
-      '<li>Tests      : ' . count($output['results']) . "</li>\n" .
-      '<li>Total time : ' . round($output['total_time']) . ' seconds' . "</li>\n";
+      '<li>PHPBench Version: ' . PHPBENCH_VERSION . "</li>\n" .
+      '<li>Tests: ' . count($output['results']) . "</li>\n" .
+      '<li>Total time: ' . round($output['total_time']) . ' seconds' . "</li>\n";
     echo '</ul>';
-    echo '<h3>Score      : ' . round($output['score']) . ' (higher is better)' . "</h3>\n";
 }
 
 $iterations = DEFAULT_BASE;
