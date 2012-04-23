@@ -146,15 +146,17 @@ function output_summary($output, $output_json) {
 }
 
 function output_summary_html($output) {
-    echo 'System     : ' . $output['php_uname'] . "\n";
-    echo 'PHP version: ' . $output['phpversion'] . "\n";
+    echo '<ul>';
+    echo '<li>System     : ' . $output['php_uname'] . "</li>\n";
+    echo '<li>PHP version: ' . $output['phpversion'] . "</li>\n";
     echo
-      'PHPBench   : ' . PHPBENCH_VERSION . "\n" .
-      'Date       : ' . date('F j, Y, g:i a') . "\n" .
-      'Tests      : ' . count($output['results']) . "\n" .
-      'Iterations : ' . $output['iterations'] . "\n" .
-      'Total time : ' . round($output['total_time']) . ' seconds' . "\n" .
-      'Score      : ' . round($output['score']) . ' (higher is better)' . "\n";
+      '<li>PHPBench   : ' . PHPBENCH_VERSION . "</li>\n" .
+      '<li>Date       : ' . date('F j, Y, g:i a') . "</li>\n" .
+      '<li>Tests      : ' . count($output['results']) . "</li>\n" .
+      '<li>Iterations : ' . $output['iterations'] . "</li>\n" .
+      '<li>Total time : ' . round($output['total_time']) . ' seconds' . "</li>\n" .
+      '<li>Score      : ' . round($output['score']) . ' (higher is better)' . "</li>\n";
+    echo '</ul>';
 }
 
 $iterations = DEFAULT_BASE;
