@@ -4,6 +4,7 @@ ignore_user_abort(TRUE);
 error_reporting(E_ALL);
 set_time_limit(0);
 ob_implicit_flush(1);
+header("Cache-Control: private, max-age=0");
 
 define('PHPBENCH_VERSION', '0.8.1');
 define('CSV_SEP', ',');
