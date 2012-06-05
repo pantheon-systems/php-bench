@@ -6,19 +6,12 @@ set_time_limit(0);
 ob_implicit_flush(1);
 header("Cache-Control: private, max-age=0");
 
-define('PHPBENCH_VERSION', '0.8.1');
+define('PHPBENCH_VERSION', '0.8.1-pantheon1');
 define('CSV_SEP', ',');
 define('CSV_NL', "\n");
 define('DEFAULT_BASE', 100);
 define('MIN_BASE', 50);
-
-$TESTS_DIRS = array('/usr/local/lib/phpbench/tests',
-            '/usr/local/share/phpbench/tests',
-            '/usr/lib/phpbench/tests',
-            '/usr/share/phpbench/tests',
-            '/opt/phpbench/tests',
-            'tests',
-            '.');
+define('DEFAULT_TEST_SUITE', 'cpu');
 
 function test_start($func) {
     global $GLOBAL_TEST_FUNC;
@@ -97,23 +90,26 @@ function load_test($tests_dir, &$tests_list) {
     return TRUE;
 }
 
-function load_tests(&$tests_dirs, &$tests_list) {
+function load_tests($test_suite, &$tests_list) {
     $ret = FALSE;
+    $tests_path = "tests/$test_suite";
 
-    foreach ($tests_dirs as $tests_dir) {
-    if (load_test($tests_dir, $tests_list) === TRUE) {
+    if (!is_dir($tests_path)) {
+        echo "Not a valid test suite. (path not found: $tests_path)\n";
+        return FALSE;
+    }
+    if (load_test("tests/$test_suite", $tests_list) === TRUE) {
         $ret = TRUE;
     }
-    }
     if (count($tests_list) <= 0) {
-    return FALSE;
+        return FALSE;
     }
     asort($tests_list);
 
     return $ret;
 }
 
-function generate_summary($iterations, &$results) {
+function generate_summary($test_suite, $iterations, &$results) {
     $output = array();
     $output['time'] = time();
     $output['date'] = date(DATE_RFC822);
@@ -122,6 +118,7 @@ function generate_summary($iterations, &$results) {
     $output['results'] = $results;
     $output['hostname'] = gethostname();
     $output['host'] = gethostbyname(gethostname());
+    $output['test_suite'] = $test_suite;
     foreach ($results as $test => $time) {
       $output['total_time'] += $time;
     }
@@ -159,6 +156,7 @@ function output_summary_html($output) {
     echo '<li>Host: ' . $output['host'] . "</li>\n";
     echo '<li>PHP version: ' . $output['phpversion'] . "</li>\n";
     echo '<li>Iterations: ' . $output['iterations'] . "</li>\n";
+    echo '<li>Test Suite: ' . $output['test_suite'] . "</li>\n";
     echo
       '<li>PHPBench Version: ' . PHPBENCH_VERSION . "</li>\n" .
       '<li>Tests: ' . count($output['results']) . "</li>\n" .
@@ -167,8 +165,20 @@ function output_summary_html($output) {
     echo "<h3>Usage:</h3>\n";
     echo "<ul>\n";
     echo "<li>Use ?iterations=999 to specify iterations</li>\n";
+    echo "<li>Use ?suite=name to specify test suite to run (default: " . DEFAULT_TEST_SUITE . ")</li>\n";
     echo "<li>Use ?format=json to output json results</li>\n";
     echo '</ul>';
+}
+
+// if run from command line, convert argv to $_GET, eg:
+//  $ php index.php suite=disk iterations=100
+if (PHP_SAPI === 'cli') {
+    parse_str(implode('&', array_slice($argv, 1)), $_GET);    
+}
+
+$test_suite = DEFAULT_TEST_SUITE;
+if (array_key_exists('suite', $_GET)) {
+    $test_suite = $_GET['suite'];
 }
 
 $iterations = DEFAULT_BASE;
@@ -178,7 +188,7 @@ if (array_key_exists('iterations', $_GET)) {
 
 $tests_list = array();
 $results = array();
-if (load_tests($TESTS_DIRS, $tests_list) === FALSE) {
+if (load_tests($test_suite, $tests_list) === FALSE) {
     die('Unable to load tests');
 }
 
@@ -188,7 +198,7 @@ if (array_key_exists('format', $_GET)) {
     $output_format = $_GET['format'];
 }
 do_tests($iterations, $tests_list, $results);
-$summary = generate_summary($iterations, $results);
+$summary = generate_summary($test_suite, $iterations, $results);
 output_summary($summary, $output_format);
 
 ?>
