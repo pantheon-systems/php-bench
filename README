@@ -39,9 +39,9 @@ List available test suites:
 Basic Usage (Web)
 -----------------
 
-Deploy to a web server and access index.php. Parameters are passed via GET params.
+Similar to CLI usage. Parameters are passed via GET:
 
-  http://<server>/index.php?suite=disk&format=json
+  http://<server>/index.php?suite=disk
 
 List available suites:
 
