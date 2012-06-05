@@ -12,6 +12,7 @@ define('CSV_NL', "\n");
 define('DEFAULT_BASE', 100);
 define('MIN_BASE', 50);
 define('DEFAULT_TEST_SUITE', 'cpu');
+define('DEFAULT_ACTION', 'run');
 
 function test_start($func) {
     global $GLOBAL_TEST_FUNC;
@@ -109,6 +110,34 @@ function load_tests($test_suite, &$tests_list) {
     return $ret;
 }
 
+function get_suites() {
+    $suites = array();
+    if ($dh = opendir('tests')) {
+        while (false !== ($entry = readdir($dh))) {
+            if ($entry != "." && $entry != "..") {
+                $suites[] = $entry;
+            }
+        }
+        closedir($dh);
+    }
+    return $suites;
+}
+
+function output_suites($suites, $format) {
+    switch($format) {
+        case 'json':
+            echo json_encode($suites);
+            break;
+        case 'csv':
+            echo "suite list doesn't support CSV right now\n";
+            break;
+        case 'html':
+        default:
+            echo join("\n", $suites) . "\n";
+            break;
+    }
+}
+
 function generate_summary($test_suite, $iterations, &$results) {
     $output = array();
     $output['time'] = time();
@@ -165,12 +194,13 @@ function output_summary_html($output) {
     echo "<h3>Usage:</h3>\n";
     echo "<ul>\n";
     echo "<li>Use ?iterations=999 to specify iterations</li>\n";
+    echo "<li>Use ?action=list_suites to list available test suites</li>\n";
     echo "<li>Use ?suite=name to specify test suite to run (default: " . DEFAULT_TEST_SUITE . ")</li>\n";
     echo "<li>Use ?format=json to output json results</li>\n";
     echo '</ul>';
 }
 
-// if run from command line, convert argv to $_GET, eg:
+// if run from command line, convert argv to $_GET so that we can run like this:
 //  $ php index.php suite=disk iterations=100
 if (PHP_SAPI === 'cli') {
     parse_str(implode('&', array_slice($argv, 1)), $_GET);    
@@ -197,8 +227,23 @@ $output_format = 'html';
 if (array_key_exists('format', $_GET)) {
     $output_format = $_GET['format'];
 }
-do_tests($iterations, $tests_list, $results);
-$summary = generate_summary($test_suite, $iterations, $results);
-output_summary($summary, $output_format);
+
+// Run the specified action (or default action)
+$action = DEFAULT_ACTION;
+if (array_key_exists('action', $_GET)) {
+    $action = $_GET['action'];
+}
+switch($action) {
+    case 'list_suites':
+        $suites = get_suites();
+        output_suites($suites, $output_format);
+        break;
+    case 'run':
+    default:
+        do_tests($iterations, $tests_list, $results);
+        $summary = generate_summary($test_suite, $iterations, $results);
+        output_summary($summary, $output_format);
+        break;
+}
 
 ?>

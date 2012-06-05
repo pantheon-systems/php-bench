@@ -32,6 +32,10 @@ Want JSON output?
 
   $ php ./index.php format=json
 
+List available test suites:
+
+  $ php ./index action=list_suites
+
 Basic Usage (Web)
 -----------------
 
@@ -39,10 +43,10 @@ Deploy to a web server and access index.php. Parameters are passed via GET param
 
   http://<server>/index.php?suite=disk&format=json
 
-List available suites
+List available suites:
 
-  http://<server>/index.php?list&format=json
+  http://<server>/index.php?action=list_suites&format=json
 
-Returns JSON:
+Returns JSON array:
 
-  {'cpu','disk'}
+  ['cpu','disk']
