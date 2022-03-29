@@ -1,6 +1,8 @@
 PHPBench - Pantheon's Fork
 =========================
 
+[![Deprecated](https://img.shields.io/badge/Pantheon-Deprecated-yellow?logo=pantheon&color=FFDC28)](https://pantheon.io/docs/oss-support-levels#deprecated)
+
     This is Pantheon's version of PHPBench, based on PHPBench 0.8.1 from http://phpbench.pureftpd.org
 
 PHPBench is a benchmark suite for PHP.
